@@ -81,7 +81,7 @@ fun DialerMainApp(
         )
     }
 
-    // কল হিস্ট্রি লিস্ট
+    // কল রেকর্ডস লিস্ট
     val callRecordsList = remember {
         mutableStateListOf(
             CallRecord("1", "Tarequl Islam", "01700000001", CallType.OUTGOING, CallMethod.SIM_1, System.currentTimeMillis() - 600000, 85, true),
@@ -228,7 +228,6 @@ fun DialerMainApp(
                 }
             }
 
-            // ডায়ালপ্যাড
             if (isKeypadVisible) {
                 KeypadBottomPanel(
                     digits = dialedDigits,
@@ -249,7 +248,6 @@ fun DialerMainApp(
         }
     }
 
-    // Eyecon পপআপ
     selectedEyeconProfile?.let { profile ->
         EyeconDetailsDialog(
             profile = profile,
