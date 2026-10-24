@@ -27,7 +27,10 @@ fun DialerMainApp(
     dtmfGenerator: DtmfSoundGenerator,
     callRecorder: CallAudioRecorder,
     isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit
+    onToggleTheme: () -> Unit,
+    externalContacts: MutableList<Contact>,
+    externalCallRecords: MutableList<CallRecord>,
+    onRequestDefaultDialer: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(NavTab.FAVORITES) }
     var isKeypadVisible by remember { mutableStateOf(false) }
@@ -40,58 +43,6 @@ fun DialerMainApp(
     var callRecordingEnabled by remember { mutableStateOf(true) }
     var sim1Label by remember { mutableStateOf("SIM 1 (GP)") }
     var sim2Label by remember { mutableStateOf("SIM 2 (BL)") }
-
-    // কন্টাক্ট লিস্ট
-    val contactsList = remember {
-        mutableStateListOf(
-            Contact(
-                id = "c-tarequl",
-                name = "Tarequl Islam",
-                number = "01700000001",
-                company = "KDS Logistics Ltd.",
-                jobTitle = "Jr. officer",
-                email = "trqemu@gmail.com",
-                isFavorite = true,
-                isLocked = true,
-                eyeconData = EyeconIntelligence.AUTHOR_PROFILE
-            ),
-            Contact(
-                id = "c-nusrat",
-                name = "Nusrat Jahan",
-                number = "01912987654",
-                company = "KDS Logistics Ltd.",
-                jobTitle = "Commercial Accounts Officer",
-                isFavorite = true
-            ),
-            Contact(
-                id = "c-rafiqul",
-                name = "Rafiqul Hasan",
-                number = "01819234567",
-                company = "Apex Footwear Ltd.",
-                jobTitle = "Senior Supply Chain Manager",
-                isFavorite = true
-            ),
-            Contact(
-                id = "c-kds",
-                name = "KDS Inland Container Depot",
-                number = "01711223344",
-                company = "KDS Logistics Ltd.",
-                jobTitle = "Central Port Operations Desk",
-                isFavorite = true
-            )
-        )
-    }
-
-    // কল রেকর্ডস লিস্ট
-    val callRecordsList = remember {
-        mutableStateListOf(
-            CallRecord("1", "Tarequl Islam", "01700000001", CallType.OUTGOING, CallMethod.SIM_1, System.currentTimeMillis() - 600000, 85, true),
-            CallRecord("2", "Tarequl Islam", "01700000001", CallType.OUTGOING, CallMethod.WHATSAPP, System.currentTimeMillis() - 1200000, 120, false),
-            CallRecord("3", "Nusrat Jahan", "01912987654", CallType.INCOMING, CallMethod.WHATSAPP, System.currentTimeMillis() - 3600000, 145, false),
-            CallRecord("4", "Rafiqul Hasan", "01819234567", CallType.MISSED, CallMethod.SIM_2, System.currentTimeMillis() - 7200000, 0, false),
-            CallRecord("5", "Tanvir Ahmed", "01844556677", CallType.MISSED, CallMethod.TELEGRAM, System.currentTimeMillis() - 14400000, 0, false)
-        )
-    }
 
     val handleCallAction: (CallMethod, String) -> Unit = { method, number ->
         activeInCallNumber = number
@@ -189,19 +140,19 @@ fun DialerMainApp(
             ) {
                 when (selectedTab) {
                     NavTab.FAVORITES -> FavoritesScreenContent(
-                        contacts = contactsList,
+                        contacts = externalContacts,
                         onCall = handleCallAction,
                         onOpenEyecon = { selectedEyeconProfile = it },
                         eyeconEnabled = eyeconEnabled,
                         onOpenKeypad = { isKeypadVisible = true }
                     )
                     NavTab.RECENTS -> RecentsScreenContent(
-                        calls = callRecordsList,
+                        calls = externalCallRecords,
                         onCall = handleCallAction,
                         onOpenEyecon = { selectedEyeconProfile = EyeconIntelligence.lookup(it) }
                     )
                     NavTab.CONTACTS -> ContactsScreenContent(
-                        contacts = contactsList,
+                        contacts = externalContacts,
                         onCall = handleCallAction,
                         onOpenEyecon = { selectedEyeconProfile = it }
                     )
