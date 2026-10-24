@@ -1,6 +1,5 @@
 package com.tarequlislam.matrixdialer.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -9,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.tarequlislam.matrixdialer.audio.DtmfSoundGenerator
 import com.tarequlislam.matrixdialer.eyecon.EyeconIntelligence
 import com.tarequlislam.matrixdialer.model.*
@@ -40,6 +40,7 @@ fun DialerMainApp(
     var sim1Label by remember { mutableStateOf("SIM 1 (GP)") }
     var sim2Label by remember { mutableStateOf("SIM 2 (BL)") }
 
+    // কন্টাক্ট লিস্ট
     val contactsList = remember {
         mutableStateListOf(
             Contact(
@@ -68,15 +69,26 @@ fun DialerMainApp(
                 company = "Apex Footwear Ltd.",
                 jobTitle = "Senior Supply Chain Manager",
                 isFavorite = true
+            ),
+            Contact(
+                id = "c-kds",
+                name = "KDS Inland Container Depot",
+                number = "01711223344",
+                company = "KDS Logistics Ltd.",
+                jobTitle = "Central Port Operations Desk",
+                isFavorite = true
             )
         )
     }
 
+    // কল হিস্ট্রি লিস্ট
     val callRecordsList = remember {
         mutableStateListOf(
             CallRecord("1", "Tarequl Islam", "01700000001", CallType.OUTGOING, CallMethod.SIM_1, System.currentTimeMillis() - 600000, 85, true),
-            CallRecord("2", "Nusrat Jahan", "01912987654", CallType.INCOMING, CallMethod.WHATSAPP, System.currentTimeMillis() - 3600000, 120, false),
-            CallRecord("3", "Rafiqul Hasan", "01819234567", CallType.MISSED, CallMethod.SIM_2, System.currentTimeMillis() - 7200000, 0, false)
+            CallRecord("2", "Tarequl Islam", "01700000001", CallType.OUTGOING, CallMethod.WHATSAPP, System.currentTimeMillis() - 1200000, 120, false),
+            CallRecord("3", "Nusrat Jahan", "01912987654", CallType.INCOMING, CallMethod.WHATSAPP, System.currentTimeMillis() - 3600000, 145, false),
+            CallRecord("4", "Rafiqul Hasan", "01819234567", CallType.MISSED, CallMethod.SIM_2, System.currentTimeMillis() - 7200000, 0, false),
+            CallRecord("5", "Tanvir Ahmed", "01844556677", CallType.MISSED, CallMethod.TELEGRAM, System.currentTimeMillis() - 14400000, 0, false)
         )
     }
 
@@ -94,15 +106,15 @@ fun DialerMainApp(
                         Text("Matrix Dialer", style = MaterialTheme.typography.titleMedium)
                         if (eyeconEnabled) {
                             Spacer(Modifier.width(8.dp))
-                            Badge(containerColor = Color(0xFF06B6D4)) {
-                                Text("EYECON", color = Color.Black)
+                            Badge(containerColor = Color(0xFF00E5FF)) {
+                                Text("EYECON", color = Color.Black, fontSize = 10.sp)
                             }
                         }
                     }
                 },
                 actions = {
                     IconButton(onClick = { isKeypadVisible = !isKeypadVisible }) {
-                        Icon(Icons.Default.Phone, contentDescription = "Toggle Keypad")
+                        Icon(Icons.Default.Dialpad, contentDescription = "Toggle Keypad")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -116,48 +128,50 @@ fun DialerMainApp(
                     selected = selectedTab == NavTab.FAVORITES,
                     onClick = { selectedTab = NavTab.FAVORITES; isKeypadVisible = false },
                     icon = { Icon(Icons.Default.Star, "Favorites") },
-                    label = { Text("Favorites") }
+                    label = { Text("Favorites", fontSize = 11.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == NavTab.RECENTS,
                     onClick = { selectedTab = NavTab.RECENTS; isKeypadVisible = false },
                     icon = { Icon(Icons.Default.History, "Recents") },
-                    label = { Text("Recents") }
+                    label = { Text("Recents", fontSize = 11.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == NavTab.CONTACTS,
                     onClick = { selectedTab = NavTab.CONTACTS; isKeypadVisible = false },
                     icon = { Icon(Icons.Default.People, "Contacts") },
-                    label = { Text("Contacts") }
+                    label = { Text("Contacts", fontSize = 11.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == NavTab.RECORDINGS,
                     onClick = { selectedTab = NavTab.RECORDINGS; isKeypadVisible = false },
                     icon = { Icon(Icons.Default.Radio, "Recordings") },
-                    label = { Text("Recordings") }
+                    label = { Text("Recordings", fontSize = 11.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == NavTab.SETTINGS,
                     onClick = { selectedTab = NavTab.SETTINGS; isKeypadVisible = false },
                     icon = { Icon(Icons.Default.Settings, "Settings") },
-                    label = { Text("Settings") }
+                    label = { Text("Settings", fontSize = 11.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == NavTab.ABOUT,
                     onClick = { selectedTab = NavTab.ABOUT; isKeypadVisible = false },
                     icon = { Icon(Icons.Default.Info, "About") },
-                    label = { Text("About") }
+                    label = { Text("About", fontSize = 11.sp) }
                 )
             }
         },
         floatingActionButton = {
             if (!isKeypadVisible) {
-                FloatingActionButton(
+                ExtendedFloatingActionButton(
                     onClick = { isKeypadVisible = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = Color(0xFF00E5FF),
+                    contentColor = Color.Black
                 ) {
-                    Icon(Icons.Default.Dialpad, contentDescription = "Open Dialpad")
+                    Icon(Icons.Default.Dialpad, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("Keypad", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -177,13 +191,13 @@ fun DialerMainApp(
                         contacts = contactsList,
                         onCall = handleCallAction,
                         onOpenEyecon = { selectedEyeconProfile = it },
-                        eyeconEnabled = eyeconEnabled
+                        eyeconEnabled = eyeconEnabled,
+                        onOpenKeypad = { isKeypadVisible = true }
                     )
                     NavTab.RECENTS -> RecentsScreenContent(
                         calls = callRecordsList,
                         onCall = handleCallAction,
-                        onOpenEyecon = { selectedEyeconProfile = EyeconIntelligence.lookup(it) },
-                        eyeconEnabled = eyeconEnabled
+                        onOpenEyecon = { selectedEyeconProfile = EyeconIntelligence.lookup(it) }
                     )
                     NavTab.CONTACTS -> ContactsScreenContent(
                         contacts = contactsList,
@@ -214,6 +228,7 @@ fun DialerMainApp(
                 }
             }
 
+            // ডায়ালপ্যাড
             if (isKeypadVisible) {
                 KeypadBottomPanel(
                     digits = dialedDigits,
@@ -234,6 +249,7 @@ fun DialerMainApp(
         }
     }
 
+    // Eyecon পপআপ
     selectedEyeconProfile?.let { profile ->
         EyeconDetailsDialog(
             profile = profile,
