@@ -7,8 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.CallLog
-import android.provider.ContactsContract
 import android.telecom.TelecomManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,6 +19,7 @@ import com.tarequlislam.matrixdialer.audio.DtmfSoundGenerator
 import com.tarequlislam.matrixdialer.model.*
 import com.tarequlislam.matrixdialer.recorder.CallAudioRecorder
 import com.tarequlislam.matrixdialer.telephony.CallManager
+import com.tarequlislam.matrixdialer.telephony.PhoneDataRepository
 import com.tarequlislam.matrixdialer.ui.DialerMainApp
 
 class MainActivity : ComponentActivity() {
@@ -29,10 +28,14 @@ class MainActivity : ComponentActivity() {
     private lateinit var dtmfGenerator: DtmfSoundGenerator
     private lateinit var callRecorder: CallAudioRecorder
 
+    val liveContacts = mutableStateListOf<Contact>()
+    val liveCallRecords = mutableStateListOf<CallRecord>()
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { _ ->
-        // পারমিশন পাওয়ার পর সিস্টেম কন্টাক্ট ও কল লগ রিফ্রেশ হবে
+        // পারমিশন পাওয়ার সাথে সাথেই ফোনের আসল ডাটা লোড হবে
+        reloadPhoneData()
     }
 
     private val defaultDialerLauncher = registerForActivityResult(
@@ -48,6 +51,7 @@ class MainActivity : ComponentActivity() {
 
         requestAllPermissions()
         promptSetDefaultDialer()
+        reloadPhoneData()
 
         setContent {
             var isDarkTheme by remember { mutableStateOf(true) }
@@ -80,9 +84,30 @@ class MainActivity : ComponentActivity() {
                     dtmfGenerator = dtmfGenerator,
                     callRecorder = callRecorder,
                     isDarkTheme = isDarkTheme,
-                    onToggleTheme = { isDarkTheme = !isDarkTheme }
+                    onToggleTheme = { isDarkTheme = !isDarkTheme },
+                    externalContacts = liveContacts,
+                    externalCallRecords = liveCallRecords,
+                    onRequestDefaultDialer = { promptSetDefaultDialer() }
                 )
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        reloadPhoneData()
+    }
+
+    private fun reloadPhoneData() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            val contacts = PhoneDataRepository.loadDeviceContacts(this)
+            liveContacts.clear()
+            liveContacts.addAll(contacts)
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) {
+            val calls = PhoneDataRepository.loadDeviceCallLogs(this)
+            liveCallRecords.clear()
+            liveCallRecords.addAll(calls)
         }
     }
 
@@ -108,12 +133,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun promptSetDefaultDialer() {
+    fun promptSetDefaultDialer() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val roleManager = getSystemService(Context.ROLE_SERVICE) as? RoleManager
             if (roleManager?.isRoleAvailable(RoleManager.ROLE_DIALER) == true &&
-                !roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
-                defaultDialerLauncher.launch(roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER))
+                !roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
+            ) {
+                val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
+                defaultDialerLauncher.launch(intent)
             }
         } else {
             val telecomManager = getSystemService(Context.TELECOM_SERVICE) as? TelecomManager
