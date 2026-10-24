@@ -30,7 +30,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- ডিফল্ট ডায়ালার ফিল্টার -->
+            <!-- ডায়াল এবং কলিং ইনটেন্ট হ্যান্ডলার -->
             <intent-filter>
                 <action android:name="android.intent.action.DIAL" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -42,9 +42,12 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="tel" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.CALL_BUTTON" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
-        <!-- ডিফল্ট ডায়ালার নিশ্চিত করার আবশ্যকীয় সার্ভিস -->
         <service
             android:name=".telephony.MatrixInCallService"
             android:permission="android.permission.BIND_INCALL_SERVICE"
