@@ -193,7 +193,7 @@ fun FavoritesScreenContent(
 }
 
 // ==========================================
-// ২. CALL HISTORY
+// ২. CALL HISTORY (সার্চ বাটন সহ আপডেট)
 // ==========================================
 @Composable
 fun RecentsScreenContent(
@@ -201,101 +201,117 @@ fun RecentsScreenContent(
     onCall: (CallMethod, String) -> Unit,
     onOpenEyecon: (String) -> Unit
 ) {
+    var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All Calls") }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Call History", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (selectedFilter == "All Calls") Color(0xFF0284C7) else Color(0xFF1E293B),
-                        modifier = Modifier.clickable { selectedFilter = "All Calls" }
-                    ) {
-                        Text("All Calls", modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), fontSize = 11.sp, color = Color.White)
-                    }
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (selectedFilter == "Missed Only") Color(0xFF0284C7) else Color(0xFF1E293B),
-                        modifier = Modifier.clickable { selectedFilter = "Missed Only" }
-                    ) {
-                        Text("Missed Only", modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), fontSize = 11.sp, color = Color.White)
-                    }
+    Column(Modifier.fillMaxSize().padding(14.dp)) {
+        // কল লগের সার্চ বার
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Search call history by name or number...", fontSize = 13.sp) },
+            leadingIcon = { Icon(Icons.Default.Search, null) },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Call History", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (selectedFilter == "All Calls") Color(0xFF0284C7) else Color(0xFF1E293B),
+                    modifier = Modifier.clickable { selectedFilter = "All Calls" }
+                ) {
+                    Text("All Calls", modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), fontSize = 11.sp, color = Color.White)
+                }
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (selectedFilter == "Missed Only") Color(0xFF0284C7) else Color(0xFF1E293B),
+                    modifier = Modifier.clickable { selectedFilter = "Missed Only" }
+                ) {
+                    Text("Missed Only", modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), fontSize = 11.sp, color = Color.White)
                 }
             }
         }
 
-        val filteredList = if (selectedFilter == "Missed Only") calls.filter { it.type == CallType.MISSED } else calls
+        Spacer(Modifier.height(10.dp))
 
-        items(filteredList) { call ->
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(14.dp).fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+        val filteredList = calls.filter { call ->
+            val matchFilter = if (selectedFilter == "Missed Only") call.type == CallType.MISSED else true
+            val matchSearch = call.contactName.contains(searchQuery, ignoreCase = true) || call.number.contains(searchQuery)
+            matchFilter && matchSearch
+        }
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            items(filteredList) { call ->
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            shape = CircleShape,
-                            color = if (call.type == CallType.MISSED) Color(0xFF450A0A) else Color(0xFF064E3B),
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Call,
-                                    contentDescription = null,
-                                    tint = if (call.type == CallType.MISSED) Color.Red else Color(0xFF10B981)
-                                )
-                            }
-                        }
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(call.contactName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = Color(0xFF064E3B)
-                                ) {
-                                    Text(
-                                        call.method.name,
-                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-                                        fontSize = 9.sp,
-                                        color = Color(0xFF10B981)
+                    Row(
+                        modifier = Modifier.padding(14.dp).fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = if (call.type == CallType.MISSED) Color(0xFF450A0A) else Color(0xFF064E3B),
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Call,
+                                        contentDescription = null,
+                                        tint = if (call.type == CallType.MISSED) Color.Red else Color(0xFF10B981)
                                     )
                                 }
-                                if (call.isRecorded) {
-                                    Spacer(Modifier.width(4.dp))
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(call.contactName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Surface(
                                         shape = RoundedCornerShape(4.dp),
-                                        color = Color(0xFF7F1D1D)
+                                        color = Color(0xFF064E3B)
                                     ) {
-                                        Text("● REC", modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), fontSize = 9.sp, color = Color.Red)
+                                        Text(
+                                            call.method.name,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                                            fontSize = 9.sp,
+                                            color = Color(0xFF10B981)
+                                        )
                                     }
+                                    if (call.isRecorded) {
+                                        Spacer(Modifier.width(4.dp))
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = Color(0xFF7F1D1D)
+                                        ) {
+                                            Text("● REC", modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), fontSize = 9.sp, color = Color.Red)
+                                        }
+                                    }
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("· ${call.durationSeconds}s", fontSize = 11.sp, color = Color.Gray)
                                 }
-                                Spacer(Modifier.width(6.dp))
-                                Text("· ${call.durationSeconds}s", fontSize = 11.sp, color = Color.Gray)
                             }
                         }
-                    }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { onOpenEyecon(call.number) }) {
-                            Icon(Icons.Default.Info, null, tint = Color(0xFF00E5FF))
-                        }
-                        IconButton(onClick = { onCall(call.method, call.number) }) {
-                            Icon(Icons.Default.Call, null, tint = Color.Gray)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { onOpenEyecon(call.number) }) {
+                                Icon(Icons.Default.Info, null, tint = Color(0xFF00E5FF))
+                            }
+                            IconButton(onClick = { onCall(call.method, call.number) }) {
+                                Icon(Icons.Default.Call, null, tint = Color.Gray)
+                            }
                         }
                     }
                 }
@@ -305,13 +321,14 @@ fun RecentsScreenContent(
 }
 
 // ==========================================
-// ৩. CONTACTS
+// ৩. CONTACTS (ফেভারিট স্টার টগল বাটন সহ আপডেট)
 // ==========================================
 @Composable
 fun ContactsScreenContent(
     contacts: MutableList<Contact>,
     onCall: (CallMethod, String) -> Unit,
-    onOpenEyecon: (EyeconProfile) -> Unit
+    onOpenEyecon: (EyeconProfile) -> Unit,
+    onToggleFavorite: (Contact) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var showAddDialog by remember { mutableStateOf(false) }
@@ -377,6 +394,15 @@ fun ContactsScreenContent(
                                     Text(contact.number, fontSize = 11.sp, color = Color.Gray)
                                     Text("${contact.jobTitle ?: ""} · ${contact.company ?: ""}", fontSize = 10.sp, color = Color.DarkGray)
                                 }
+                            }
+
+                            // ⭐ ফেভারিট স্টার টগল বাটন
+                            IconButton(onClick = { onToggleFavorite(contact) }) {
+                                Icon(
+                                    imageVector = if (contact.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                                    contentDescription = "Toggle Favorite",
+                                    tint = if (contact.isFavorite) Color(0xFFFFB703) else Color.Gray
+                                )
                             }
                         }
 
@@ -536,7 +562,7 @@ fun RecordingsScreenContent(callRecorder: CallAudioRecorder, recordingEnabled: B
 }
 
 // ==========================================
-// ৫. SETTINGS
+// ৫. SETTINGS (ডিফল্ট ডায়ালার সুইচ বাটন সহ)
 // ==========================================
 @Composable
 fun SettingsScreenContent(
@@ -549,13 +575,40 @@ fun SettingsScreenContent(
     sim1Label: String,
     onSim1Change: (String) -> Unit,
     sim2Label: String,
-    onSim2Change: (String) -> Unit
+    onSim2Change: (String) -> Unit,
+    onRequestDefaultDialer: () -> Unit
 ) {
     var testNumber by remember { mutableStateOf("01700000001") }
 
     LazyColumn(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Text("Matrix Dialer Settings", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        }
+
+        // ডিফল্ট ডায়ালার সেট করার ওয়ান-ক্লিক কার্ড
+        item {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0284C7)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Default Phone App", fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Set Matrix Dialer as your system default phone app", fontSize = 11.sp, color = Color(0xFFE0F2FE))
+                    }
+                    Button(
+                        onClick = onRequestDefaultDialer,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF090D16))
+                    ) {
+                        Text("Set Default", fontSize = 11.sp, color = Color(0xFF00E5FF))
+                    }
+                }
+            }
         }
 
         item {
