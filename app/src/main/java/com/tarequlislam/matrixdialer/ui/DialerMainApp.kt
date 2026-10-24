@@ -154,7 +154,13 @@ fun DialerMainApp(
                     NavTab.CONTACTS -> ContactsScreenContent(
                         contacts = externalContacts,
                         onCall = handleCallAction,
-                        onOpenEyecon = { selectedEyeconProfile = it }
+                        onOpenEyecon = { selectedEyeconProfile = it },
+                        onToggleFavorite = { contact ->
+                            val index = externalContacts.indexOf(contact)
+                            if (index != -1) {
+                                externalContacts[index] = contact.copy(isFavorite = !contact.isFavorite)
+                            }
+                        }
                     )
                     NavTab.RECORDINGS -> RecordingsScreenContent(
                         callRecorder = callRecorder,
@@ -170,7 +176,8 @@ fun DialerMainApp(
                         sim1Label = sim1Label,
                         onSim1Change = { sim1Label = it },
                         sim2Label = sim2Label,
-                        onSim2Change = { sim2Label = it }
+                        onSim2Change = { sim2Label = it },
+                        onRequestDefaultDialer = onRequestDefaultDialer
                     )
                     NavTab.ABOUT -> AboutScreenContent(
                         onDirectCallDeveloper = { method ->
