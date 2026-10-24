@@ -1,0 +1,47 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # এটি দিলে গিটহাব থেকে সরাসরি এক ক্লিকে ম্যানুয়ালি বিল্ড চালু করা যায়
+
+jobs:
+  build:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # ১. রিপোজিটরি কোড চেকআউট করা
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ২. জাভা ১৭ (Java 17) সেটআপ করা
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # ৩. যদি gradlew ফাইল না থাকে তবে তৈরি করা ও পারমিশন দেওয়া
+      - name: Setup Gradle Wrapper & Permissions
+        run: |
+          if [ ! -f "./gradlew" ]; then
+            sudo apt-get update && sudo apt-get install -y gradle
+            gradle wrapper
+          fi
+          chmod +x gradlew
+
+      # ৪. APK বিল্ড করা
+      - name: Build Debug APK with Gradle
+        run: ./gradlew assembleDebug --stacktrace
+
+      # ৫. বিল্ড হওয়া APK ফাইলটি ডাউনলোড করার জন্য আপলোড করা
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MatrixDialer-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 14
