@@ -1,21 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- ফোন ডায়াল ও কল করার পারমিশন -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
-
-    <!-- রিয়েল কন্টাক্ট লিস্ট রিড ও রাইট পারমিশন -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-
-    <!-- কল লগ হিস্ট্রি দেখার পারমিশন -->
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
-
-    <!-- অডিও রেকর্ড ও ইন্টারনেট -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -37,7 +30,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- ডিফল্ট ডায়ালার হিসেবে রেজিস্ট্রেশন -->
+            <!-- ডিফল্ট ডায়ালার ফিল্টার -->
             <intent-filter>
                 <action android:name="android.intent.action.DIAL" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -50,6 +43,19 @@
                 <data android:scheme="tel" />
             </intent-filter>
         </activity>
+
+        <!-- ডিফল্ট ডায়ালার নিশ্চিত করার আবশ্যকীয় সার্ভিস -->
+        <service
+            android:name=".telephony.MatrixInCallService"
+            android:permission="android.permission.BIND_INCALL_SERVICE"
+            android:exported="true">
+            <meta-data
+                android:name="android.telecom.IN_CALL_SERVICE_UI"
+                android:value="true" />
+            <intent-filter>
+                <action android:name="android.telecom.InCallService" />
+            </intent-filter>
+        </service>
 
     </application>
 </manifest>
