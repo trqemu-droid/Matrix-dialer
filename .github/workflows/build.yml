@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: # এটি দিলে গিটহাব থেকে সরাসরি এক ক্লিকে ম্যানুয়ালি বিল্ড চালু করা যায়
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,32 +13,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ১. রিপোজিটরি কোড চেকআউট করা
+      # ১. কোড চেকআউট
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ২. জাভা ১৭ (Java 17) সেটআপ করা
+      # ২. জাভা ১৭ সেটআপ
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      # ৩. যদি gradlew ফাইল না থাকে তবে তৈরি করা ও পারমিশন দেওয়া
-      - name: Setup Gradle Wrapper & Permissions
+      # ৩. আধুনিক Gradle 8.10.2 সেটআপ (অটোমেটিক ডাউনলোড হবে)
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      # ৪. যদি gradlew না থাকে, আধুনিক 8.10.2 দিয়ে জেনারেট করা
+      - name: Ensure Gradle Wrapper
         run: |
           if [ ! -f "./gradlew" ]; then
-            sudo apt-get update && sudo apt-get install -y gradle
-            gradle wrapper
+            gradle wrapper --gradle-version 8.10.2 --distribution-type bin
           fi
           chmod +x gradlew
 
-      # ৪. APK বিল্ড করা
-      - name: Build Debug APK with Gradle
-        run: ./gradlew assembleDebug --stacktrace
+      # ৫. APK বিল্ড করা
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      # ৫. বিল্ড হওয়া APK ফাইলটি ডাউনলোড করার জন্য আপলোড করা
+      # ৬. তৈরি হওয়া APK আপলোড করা (ডাউনলোডের জন্য)
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
