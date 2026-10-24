@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.tarequlislam.matrixdialer.ui
 
 import android.content.Intent
@@ -6,9 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +28,7 @@ import com.tarequlislam.matrixdialer.model.*
 import com.tarequlislam.matrixdialer.recorder.CallAudioRecorder
 
 // ==========================================
-// ১. FAVORITES SCREEN (স্ক্রিনশট ৪ এর মতো গ্রিড ভিউ)
+// ১. FAVORITES SCREEN
 // ==========================================
 @Composable
 fun FavoritesScreenContent(
@@ -72,7 +71,6 @@ fun FavoritesScreenContent(
             }
         }
 
-        // ২-কলামের কার্ড গ্রিড
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 favorites.chunked(2).forEach { rowContacts ->
@@ -105,7 +103,7 @@ fun FavoritesScreenContent(
                                                 onClick = { onOpenEyecon(contact.eyeconData ?: EyeconIntelligence.lookup(contact.number)) },
                                                 modifier = Modifier.size(24.dp)
                                             ) {
-                                                Icon(Icons.Default.AutoAwesome, null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
+                                                Icon(Icons.Default.Info, null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
                                             }
                                         }
                                     }
@@ -116,7 +114,6 @@ fun FavoritesScreenContent(
 
                                     Spacer(Modifier.height(10.dp))
 
-                                    // ৪টি বাটন (SIM1, SIM2, WA, TG)
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                                         modifier = Modifier.fillMaxWidth()
@@ -145,7 +142,7 @@ fun FavoritesScreenContent(
                                             modifier = Modifier.weight(1f).height(32.dp).clickable { onCall(CallMethod.WHATSAPP, contact.number) }
                                         ) {
                                             Box(contentAlignment = Alignment.Center) {
-                                                Icon(Icons.Default.Chat, null, tint = Color(0xFF25D366), modifier = Modifier.size(14.dp))
+                                                Icon(Icons.Default.Phone, null, tint = Color(0xFF25D366), modifier = Modifier.size(14.dp))
                                             }
                                         }
                                         Surface(
@@ -167,7 +164,6 @@ fun FavoritesScreenContent(
             }
         }
 
-        // নিচে নোটিশ ও Open Keypad বাটন
         item {
             Card(
                 shape = RoundedCornerShape(16.dp),
@@ -197,7 +193,7 @@ fun FavoritesScreenContent(
 }
 
 // ==========================================
-// ২. CALL HISTORY (স্ক্রিনশট ৫ এর মতো ফিল্টার ও হিস্ট্রি)
+// ২. CALL HISTORY
 // ==========================================
 @Composable
 fun RecentsScreenContent(
@@ -219,16 +215,20 @@ fun RecentsScreenContent(
             ) {
                 Text("Call History", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FilterChip(
-                        selected = selectedFilter == "All Calls",
-                        onClick = { selectedFilter = "All Calls" },
-                        label = { Text("All Calls", fontSize = 11.sp) }
-                    )
-                    FilterChip(
-                        selected = selectedFilter == "Missed Only",
-                        onClick = { selectedFilter = "Missed Only" },
-                        label = { Text("Missed Only", fontSize = 11.sp) }
-                    )
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (selectedFilter == "All Calls") Color(0xFF0284C7) else Color(0xFF1E293B),
+                        modifier = Modifier.clickable { selectedFilter = "All Calls" }
+                    ) {
+                        Text("All Calls", modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), fontSize = 11.sp, color = Color.White)
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (selectedFilter == "Missed Only") Color(0xFF0284C7) else Color(0xFF1E293B),
+                        modifier = Modifier.clickable { selectedFilter = "Missed Only" }
+                    ) {
+                        Text("Missed Only", modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), fontSize = 11.sp, color = Color.White)
+                    }
                 }
             }
         }
@@ -254,7 +254,7 @@ fun RecentsScreenContent(
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
-                                    imageVector = if (call.type == CallType.MISSED) Icons.Default.CallMissed else Icons.Default.Call,
+                                    imageVector = Icons.Default.Call,
                                     contentDescription = null,
                                     tint = if (call.type == CallType.MISSED) Color.Red else Color(0xFF10B981)
                                 )
@@ -292,10 +292,10 @@ fun RecentsScreenContent(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { onOpenEyecon(call.number) }) {
-                            Icon(Icons.Default.AutoAwesome, null, tint = Color(0xFF00E5FF))
+                            Icon(Icons.Default.Info, null, tint = Color(0xFF00E5FF))
                         }
                         IconButton(onClick = { onCall(call.method, call.number) }) {
-                            Icon(Icons.Default.ChevronRight, null, tint = Color.Gray)
+                            Icon(Icons.Default.Call, null, tint = Color.Gray)
                         }
                     }
                 }
@@ -305,7 +305,7 @@ fun RecentsScreenContent(
 }
 
 // ==========================================
-// ৩. CONTACTS (স্ক্রিনশট ৭ এর মতো কন্টাক্ট ডিরেক্টরি ও New/Edit/Delete)
+// ৩. CONTACTS
 // ==========================================
 @Composable
 fun ContactsScreenContent(
@@ -318,7 +318,6 @@ fun ContactsScreenContent(
     var editingContact by remember { mutableStateOf<Contact?>(null) }
 
     Column(Modifier.fillMaxSize().padding(14.dp)) {
-        // সার্চ বার এবং + New বাটন
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -337,7 +336,7 @@ fun ContactsScreenContent(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
             ) {
-                Icon(Icons.Default.PersonAdd, null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(4.dp))
                 Text("New", fontSize = 12.sp)
             }
@@ -382,14 +381,13 @@ fun ContactsScreenContent(
                         }
 
                         Spacer(Modifier.height(8.dp))
-                        // ৭টি বাটন (Eyecon, Call1, Call2, WA, TG, Edit, Delete)
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             IconButton(onClick = { onOpenEyecon(contact.eyeconData ?: EyeconIntelligence.lookup(contact.number)) }) {
-                                Icon(Icons.Default.AutoAwesome, null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Info, null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
                             }
                             IconButton(onClick = { onCall(CallMethod.SIM_1, contact.number) }) {
                                 Icon(Icons.Default.Call, null, tint = Color(0xFF10B981), modifier = Modifier.size(16.dp))
@@ -398,7 +396,7 @@ fun ContactsScreenContent(
                                 Icon(Icons.Default.Call, null, tint = Color(0xFF818CF8), modifier = Modifier.size(16.dp))
                             }
                             IconButton(onClick = { onCall(CallMethod.WHATSAPP, contact.number) }) {
-                                Icon(Icons.Default.Chat, null, tint = Color(0xFF25D366), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Phone, null, tint = Color(0xFF25D366), modifier = Modifier.size(16.dp))
                             }
                             IconButton(onClick = { onCall(CallMethod.TELEGRAM, contact.number) }) {
                                 Icon(Icons.Default.Share, null, tint = Color(0xFF38BDF8), modifier = Modifier.size(16.dp))
@@ -419,7 +417,6 @@ fun ContactsScreenContent(
         }
     }
 
-    // নতুন কন্টাক্ট তৈরির ডায়ালগ
     if (showAddDialog) {
         ContactFormDialog(
             title = "Add New Contact",
@@ -431,7 +428,6 @@ fun ContactsScreenContent(
         )
     }
 
-    // কন্টাক্ট এডিট করার ডায়ালগ
     editingContact?.let { c ->
         ContactFormDialog(
             title = "Edit Contact",
@@ -452,7 +448,7 @@ fun ContactsScreenContent(
 }
 
 // ==========================================
-// ৪. RECORDINGS VAULT (স্ক্রিনশট ৩ এর মতো ওয়েভফর্ম ও ফাইল ইনফো)
+// ৪. RECORDINGS VAULT
 // ==========================================
 @Composable
 fun RecordingsScreenContent(callRecorder: CallAudioRecorder, recordingEnabled: Boolean) {
@@ -481,7 +477,6 @@ fun RecordingsScreenContent(callRecorder: CallAudioRecorder, recordingEnabled: B
             }
         }
 
-        // রেকর্ড আইটেম
         items(listOf("Tarequl Islam" to "01700000001", "Rafiqul Hasan" to "01819234567")) { (name, num) ->
             Card(
                 shape = RoundedCornerShape(16.dp),
@@ -508,7 +503,6 @@ fun RecordingsScreenContent(callRecorder: CallAudioRecorder, recordingEnabled: B
                     }
 
                     Spacer(Modifier.height(10.dp))
-                    // সিমুলেটেড অডিও ওয়েভফর্ম (Waveform)
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
@@ -517,7 +511,7 @@ fun RecordingsScreenContent(callRecorder: CallAudioRecorder, recordingEnabled: B
                             Box(
                                 modifier = Modifier
                                     .width(4.dp)
-                                    .height((8..24).random().dp)
+                                    .height(14.dp)
                                     .clip(RoundedCornerShape(2.dp))
                                     .background(Color(0xFF334155))
                             )
@@ -532,7 +526,6 @@ fun RecordingsScreenContent(callRecorder: CallAudioRecorder, recordingEnabled: B
                     ) {
                         Text("Audio Format: High Definition AMR-WB", fontSize = 10.sp, color = Color.DarkGray)
                         Row {
-                            IconButton(onClick = {}) { Icon(Icons.Default.FileDownload, null, tint = Color.LightGray, modifier = Modifier.size(16.dp)) }
                             IconButton(onClick = {}) { Icon(Icons.Default.Delete, null, tint = Color.LightGray, modifier = Modifier.size(16.dp)) }
                         }
                     }
@@ -543,7 +536,7 @@ fun RecordingsScreenContent(callRecorder: CallAudioRecorder, recordingEnabled: B
 }
 
 // ==========================================
-// ৫. SETTINGS (স্ক্রিনশট ৬ এর মতো থিম, টেস্ট আইকন ও ডাবল সিম ইনপুট)
+// ৫. SETTINGS
 // ==========================================
 @Composable
 fun SettingsScreenContent(
@@ -559,14 +552,12 @@ fun SettingsScreenContent(
     onSim2Change: (String) -> Unit
 ) {
     var testNumber by remember { mutableStateOf("01700000001") }
-    var inspectedProfile by remember { mutableStateOf<EyeconProfile?>(null) }
 
     LazyColumn(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Text("Matrix Dialer Settings", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
 
-        // Appearance & Theme
         item {
             Card(
                 shape = RoundedCornerShape(16.dp),
@@ -587,7 +578,6 @@ fun SettingsScreenContent(
             }
         }
 
-        // Eyecon Tester Box
         item {
             Card(
                 shape = RoundedCornerShape(16.dp),
@@ -608,21 +598,12 @@ fun SettingsScreenContent(
                         value = testNumber,
                         onValueChange = { testNumber = it },
                         label = { Text("Test Eyecon Database on Any Phone Number:") },
-                        trailingIcon = {
-                            Button(
-                                onClick = { inspectedProfile = EyeconIntelligence.lookup(testNumber) },
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Text("Inspect ID", fontSize = 11.sp)
-                            }
-                        },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
         }
 
-        // Dual SIM Labels Configuration
         item {
             Card(
                 shape = RoundedCornerShape(16.dp),
@@ -650,7 +631,7 @@ fun SettingsScreenContent(
 }
 
 // ==========================================
-// ৬. ABOUT (স্ক্রিনশট ২ এর মতো Tarequl Islam এর প্রোফাইল কার্ড)
+// ৬. ABOUT
 // ==========================================
 @Composable
 fun AboutScreenContent(onDirectCallDeveloper: (CallMethod) -> Unit) {
@@ -679,21 +660,10 @@ fun AboutScreenContent(onDirectCallDeveloper: (CallMethod) -> Unit) {
                     Spacer(Modifier.height(8.dp))
                     Text("Matrix Dialer", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
                     Text("NEXT-GEN TELEPHONY · V2.4 PRO", fontSize = 11.sp, color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(10.dp))
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
-                    ) {
-                        Icon(Icons.Default.FileDownload, null)
-                        Spacer(Modifier.width(6.dp))
-                        Text("ফোনে ইনস্টল / ডাউনলোড করুন (Install App)")
-                    }
                 }
             }
         }
 
-        // Tarequl Islam - Verified Author Card
         item {
             Card(
                 shape = RoundedCornerShape(20.dp),
@@ -758,7 +728,6 @@ fun AboutScreenContent(onDirectCallDeveloper: (CallMethod) -> Unit) {
     }
 }
 
-// ইন-অ্যাপ কন্টাক্ট তৈরির ফর্ম ডায়ালগ
 @Composable
 fun ContactFormDialog(
     title: String,
@@ -796,7 +765,6 @@ fun ContactFormDialog(
     )
 }
 
-// Eyecon Social ID Dialog
 @Composable
 fun EyeconDetailsDialog(profile: EyeconProfile, onDismiss: () -> Unit, onCall: (CallMethod) -> Unit) {
     val context = LocalContext.current
